@@ -20,8 +20,6 @@ Results may vary to some extent due to the random initialization.
 
 The training speed for both the Estimator and original implementations are 44 steps/sec (~17600 words per second) for a K80.
 
-<center>
-
 | Epoch | Estimator | Original |
 |:-----:|:---------:|:--------:|
 | 1 | Train: 269.615<br>Valid: 176.892 | Train: 268.352<br>Valid: 181.622 |
@@ -29,13 +27,9 @@ The training speed for both the Estimator and original implementations are 44 st
 | 10 | Train: 41.456<br>Valid: 119.530 | Train: 41.478<br>Valid: 121.326 |
 | 13 | Train: 40.530<br>Valid: 118.812<br>Test: 114.159 | Train: 40.551<br>Valid: 120.697<br>Test: 114.932 |
 
-</center>
-
 ### Medium
 
 The training speed for both the Estimator and original implementations are 8 steps/sec (~5600 words per second) for a K80.
-
-<center>
 
 | Epoch | Estimator | Original |
 |:-----:|:---------:|:--------:|
@@ -44,5 +38,3 @@ The training speed for both the Estimator and original implementations are 8 ste
 | 20 | Train: 47.341<br>Valid: 87.994 | Train: 47.685<br>Valid: 88.572 |
 | 30 | Train: 45.799<br>Valid: 87.394 | Train: 46.056<br>Valid: 88.256 |
 | 39 | Train: 45.522<br>Valid: 87.337<br>Test: 83.731 | Train: 45.865<br>Valid: 88.054<br>Test: 83.695 |
-
-</center>

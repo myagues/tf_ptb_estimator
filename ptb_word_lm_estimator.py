@@ -40,6 +40,7 @@ import time
 
 import numpy as np
 import tensorflow as tf
+from tensorflow.contrib.framework import nest
 
 import reader
 
@@ -161,10 +162,10 @@ class RNNStateHook(tf.train.SessionRunHook):
     def __init__(self, tensors):
         self.initial_state = tensors["initial_state"]
         self.output_state = tensors["output_state"]
-        self.current_state = None
+        self.current_state = tf.get_collection('rnn_input_state')
 
     def after_create_session(self, session, coord):
-        self.current_state = session.run(self.initial_state)
+        self.current_state = [np.zeros(var.shape) for var in self.current_state]
 
     def before_run(self, run_context):
         run_args = tf.train.SessionRunArgs(
@@ -216,6 +217,9 @@ class PTBModel(object):
         initial_state = cell.zero_state(self.params.batch_size, tf.float32)
         end_points["initial_state"] = initial_state
 
+        for tensor in nest.flatten(initial_state):
+            tf.add_to_collection('rnn_input_state', tensor)
+
         inputs = tf.unstack(inputs, num=self.params.num_steps, axis=1)
         outputs, state = tf.nn.static_rnn(cell, inputs,
                                           initial_state=initial_state)
@@ -239,7 +243,7 @@ class PTBModel(object):
         if self.params.rnn_mode == BASIC:
             cell = tf.contrib.rnn.BasicLSTMCell(
                 self.params.hidden_size, forget_bias=0.0, state_is_tuple=True)
-        if self.params.rnn_mode == BLOCK:
+        elif self.params.rnn_mode == BLOCK:
             cell = tf.contrib.rnn.LSTMBlockCell(
                 self.params.hidden_size, forget_bias=0.0)
         else:
@@ -270,7 +274,7 @@ def model_fn(features, labels, mode, params):
     loss = tf.contrib.seq2seq.sequence_loss(
         logits,
         labels,
-        tf.ones([params.batch_size, params.num_steps], dtype=tf.float32),
+        tf.ones([params.batch_size, params.num_steps]),
         average_across_timesteps=False,
         average_across_batch=True)
     loss = tf.reduce_sum(loss)
@@ -296,7 +300,7 @@ def model_fn(features, labels, mode, params):
     hook_list.append(PrintingHook(tensors=tensors))
 
     return tf.estimator.EstimatorSpec(
-        mode=tf.estimator.ModeKeys.TRAIN,
+        mode=mode,
         loss=loss,
         train_op=train_op,
         training_hooks=hook_list,
@@ -359,7 +363,7 @@ if __name__ == "__main__":
         "--model",
         type=str,
         default="small",
-        help="A type of model. Possible options are: medium, medium, large.")
+        help="A type of model. Possible options are: small, medium, large.")
 
     parser.add_argument(
         "--data_path",
